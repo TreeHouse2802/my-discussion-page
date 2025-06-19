@@ -1,0 +1,334 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thảo luận về Ám sợ Chuyên biệt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6A5ACD;
+      --secondary: #FF69B4;
+      --light: #F8F9FA;
+      --dark: #343A40;
+      --accent: #00CED1;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f9f7ff, #e4f1ff);
+      transition: background 0.4s, color 0.4s;
+    }
+
+    .admin-banner {
+      background-color: #ffe4b5;
+      color: #333;
+      text-align: center;
+      padding: 1rem;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-darkmode {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    header {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: var(--primary);
+      border-left: 6px solid var(--secondary);
+      padding-left: 10px;
+      margin-top: 2rem;
+    }
+
+    .info-banner, .resource-banner {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .info-banner img {
+      max-width: 90%;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+
+    .resource-links {
+      text-align: left;
+      padding: 1rem;
+      background: #f0f8ff;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .resource-links ul {
+      padding-left: 1.2rem;
+    }
+
+    .resource-links li {
+      margin-bottom: 0.5rem;
+    }
+    .avatar {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="admin-banner">
+    📢 Tin nhắn từ quản trị viên: Cảm ơn bạn đã tham gia thảo luận! Hãy đảm bảo ngôn từ phù hợp và chia sẻ chân thành nhé.
+  </div>
+
+  <button class="toggle-darkmode" onclick="toggleDarkMode()">🌓</button>
+
+  <button onclick="promptAdmin()">🔒 Đăng nhập quản trị viên</button>
+<header>
+    <h1>Thảo luận: Những Ám Sợ Chuyên Biệt</h1>
+    <p>Chia sẻ cảm nhận của bạn về chủ đề và tài liệu mở rộng</p>
+  </header>
+
+  <div class="container">
+    <button onclick="toggleInfographic()">Hiển thị / Ẩn infographic</button>
+    <div id="infographic" class="info-banner" style="display: none;">
+  <img src="3444846f-c34f-4693-afe4-b770a69b419e.png" alt="Infographic 1">
+  <img src="ec4dee0c-44eb-4549-a1c2-9619be8edc21.png" alt="Infographic 2">
+</div>
+
+      <button onclick="toggleResources()">Hiển thị / Ẩn tài liệu tham khảo</button>
+      <div id="resources" class="resource-links">
+        <h2>Tài liệu tham khảo</h2>
+        <ul>
+  <li><a href="https://docs.google.com/document/d/1ieZa_sKAgBydCt9e8AZCIcdV3EypUnYcU4rgR6scSpU/edit?tab=t.0" target="_blank"><strong>Tài liệu tổng hợp từ Google Docs</strong></a></li>
+  <li><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3181681/" target="_blank">Hiểu về Specific Phobia (NCBI)</a></li>
+  <li><a href="https://www.psychologytoday.com/us/basics/phobias" target="_blank">Psychology Today - Phobias Overview</a></li>
+          <li><a href="https://www.apa.org/topics/anxiety/phobias" target="_blank">APA - Tổng quan về phobia</a></li>
+          <li><a href="https://www.who.int/news-room/fact-sheets/detail/mental-disorders" target="_blank">WHO - Mental Disorders Overview</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="comment-section">
+  <h2>Bình luận của bạn</h2>
+  <input type="text" id="nameBox" class="name-box" placeholder="Tên của bạn (tuỳ chọn)" value="">
+  <div class="anonymous-toggle">
+    <input type="checkbox" id="anonymousCheck"> <label for="anonymousCheck">Bình luận ẩn danh</label>
+  </div>
+  <textarea id="commentBox" class="comment-box" rows="4" placeholder="Viết cảm nhận của bạn..."></textarea>
+  <button onclick="postComment()">Gửi bình luận</button>
+  <button onclick="sortComments()">Sắp xếp theo lượt thích 🔼</button>
+  <p><strong>Tổng số bình luận:</strong> <span id="comment-count">0</span></p>
+<div class="comments" id="comments"></div>
+<button onclick="loadMoreComments()" id="loadMoreBtn">Xem thêm bình luận</button>
+</section>
+
+<style>
+  .comment-box, .name-box {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  .comments .comment {
+    background: var(--light);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-left: 5px solid var(--accent);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .comment strong {
+    color: var(--dark);
+  }
+  .reply-box {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+  }
+  .reply-input {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+  .comment-footer {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 10px;
+  }
+</style>
+
+<script>
+  let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+let commentsPerPage = 10;
+let visibleComments = 10;
+const ADMIN_NAME = 'admin';
+const ADMIN_PASS = 'matkhau123';
+let isAdmin = false;
+let currentUser = localStorage.getItem('currentUser') || '';
+let commentsPerPage = 10;
+let visibleComments = 10;
+  let sortAsc = true;
+
+  function postComment(parentId = null) {
+  let nameInput = document.getElementById('nameBox')?.value.trim();
+  if (!nameInput && currentUser && !document.getElementById('anonymousCheck')?.checked) nameInput = currentUser;
+  const isAnon = document.getElementById('anonymousCheck')?.checked;
+  const text = document.getElementById('commentBox')?.value.trim();
+  if (!text) return;
+  const name = isAdmin && nameInput === ADMIN_NAME ? ADMIN_NAME : (isAnon ? 'Ẩn danh' : nameInput || 'Ẩn danh');
+  currentUser = name;
+  localStorage.setItem('currentUser', currentUser);
+  const newComment = {
+    id: Date.now(),
+    name: name,
+    text: text,
+    likes: 0,
+    pinned: false,
+    parentId
+  };
+  comments.push(newComment);
+  localStorage.setItem('comments', JSON.stringify(comments));
+  document.getElementById('commentBox').value = '';
+  if (currentUser) document.getElementById('nameBox').value = currentUser;
+  renderComments();
+}</strong><br>${comment.text}
+        <div class="comment-footer">
+          <button onclick="likeComment(${comment.id})">❤️ ${comment.likes}</button>
+          <button onclick="showReplyBox(${comment.id})">💬 Phản hồi</button>
+          <button onclick="shareComment('${comment.text}')">🔗 Chia sẻ</button> ${isAdmin || comment.name === ADMIN_NAME ? `<button onclick="editComment(${comment.id})">✏️ Sửa</button><button onclick="deleteComment(${comment.id})">🗑️ Xóa</button>` : ''}
+        </div>
+        <div id="reply-box-${comment.id}" class="reply-box" style="display:none">
+          <textarea id="reply-${comment.id}" class="reply-input" rows="2" placeholder="Trả lời..."></textarea><br>
+          <button onclick="replyToComment(${comment.id})">Gửi phản hồi</button>
+        </div>
+      `;
+      container.appendChild(div);
+      // hiển thị các phản hồi
+      const replies = comments.filter(r => r.parentId === comment.id);
+      replies.forEach(reply => {
+        const rdiv = document.createElement('div');
+        rdiv.className = 'comment';
+        rdiv.style.marginLeft = '2rem';
+        rdiv.innerHTML = `<strong>${reply.name}</strong><br>${reply.text}<br>
+        <button onclick="likeComment(${reply.id})">❤️ ${reply.likes}</button>
+        ${(isAdmin || reply.name === ADMIN_NAME) ? `<button onclick="editComment(${reply.id})">✏️ Sửa</button><button onclick="deleteComment(${reply.id})">🗑️ Xóa</button>` : ''}`;
+        container.appendChild(rdiv);
+      });
+    });
+  }
+
+  function showReplyBox(id) {
+    const box = document.getElementById(`reply-box-${id}`);
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function shareComment(text) {
+    const shareData = {
+      title: 'Bình luận hay',
+      text: text,
+      url: window.location.href
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(err => console.error(err));
+    } else {
+      prompt('Sao chép bình luận để chia sẻ:', `${text}
+${window.location.href}`);
+    }
+  }
+
+  renderComments();
+function toggleReplies(id) {
+  const repliesDiv = document.getElementById(`replies-${id}`);
+  if (repliesDiv) {
+    repliesDiv.style.display = repliesDiv.style.display === 'none' ? 'block' : 'none';
+  }
+}
+function loadMoreComments() {
+  visibleComments += commentsPerPage;
+  renderComments();
+  if (visibleComments >= comments.length) {
+    document.getElementById('loadMoreBtn').style.display = 'none';
+  }
+}
+function pinComment(id) {
+  if (!isAdmin) return;
+  const index = comments.findIndex(c => c.id === id);
+  if (index !== -1) {
+    comments[index].pinned = !comments[index].pinned;
+    localStorage.setItem('comments', JSON.stringify(comments));
+    renderComments();
+  }
+}
+function promptAdmin() {
+  const inputName = prompt('Tên đăng nhập:');
+  const inputPass = prompt('Mật khẩu:');
+  if (inputName === ADMIN_NAME && inputPass === ADMIN_PASS) {
+    isAdmin = true;
+    alert('Đăng nhập quản trị viên thành công!');
+  } else {
+    alert('Sai thông tin quản trị viên.');
+  }
+}
+function deleteComment(id) {
+  const index = comments.findIndex(c => c.id === id);
+  if (index !== -1 && (isAdmin || comments[index].name === ADMIN_NAME)) {
+    comments.splice(index, 1);
+    comments = comments.filter(c => c.parentId !== id);
+    localStorage.setItem('comments', JSON.stringify(comments));
+    renderComments();
+  }
+}
+
+function editComment(id) {
+  const comment = comments.find(c => c.id === id);
+  if (comment && (isAdmin || comment.name === ADMIN_NAME)) {
+    const updatedText = prompt('Chỉnh sửa bình luận:', comment.text);
+    if (updatedText !== null) {
+      comment.text = updatedText.trim();
+      localStorage.setItem('comments', JSON.stringify(comments));
+      renderComments();
+    }
+  }
+}
+</script>
+  </div>
+
+  <script>
+    function toggleInfographic() {
+      const img = document.getElementById('infographic');
+      img.style.display = img.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleResources() {
+      const res = document.getElementById('resources');
+      res.style.display = res.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+</body>
+</html>

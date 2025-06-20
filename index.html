@@ -1,40 +1,4 @@
-﻿<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thảo luận về Ám sợ Chuyên biệt</title>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #6A5ACD;
-      --secondary: #FF69B4;
-      --light: #F8F9FA;
-      --dark: #343A40;
-      --accent: #00CED1;
-    }
-
-    body {
-      font-family: 'Quicksand', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f9f7ff, #e4f1ff);
-      transition: background 0.4s, color 0.4s;
-    }
-
-    .admin-banner {
-      background-color: #ffe4b5;
-      color: #333;
-      text-align: center;
-      padding: 1rem;
-      font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .toggle-darkmode {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
+m;
     }
 
     header {
@@ -104,7 +68,7 @@
 
   <button class="toggle-darkmode" onclick="toggleDarkMode()">🌓</button>
 
-  <button onclick="promptAdmin()">🔒 Đăng nhập quản trị viên</button>
+  <button onclick="promptAdmin()" id="adminLogin">🔒 Đăng nhập quản trị viên</button>
 <header>
     <h1>Thảo luận: Những Ám Sợ Chuyên Biệt</h1>
     <p>Chia sẻ cảm nhận của bạn về chủ đề và tài liệu mở rộng</p>
@@ -113,8 +77,8 @@
   <div class="container">
     <button onclick="toggleInfographic()">Hiển thị / Ẩn infographic</button>
     <div id="infographic" class="info-banner" style="display: none;">
-  <img src="3444846f-c34f-4693-afe4-b770a69b419e.png" alt="Infographic 1">
-  <img src="ec4dee0c-44eb-4549-a1c2-9619be8edc21.png" alt="Infographic 2">
+  <img src="/mnt/data/3444846f-c34f-4693-afe4-b770a69b419e.png" alt="Infographic 1">
+  <img src="/mnt/data/ec4dee0c-44eb-4549-a1c2-9619be8edc21.png" alt="Infographic 2">
 </div>
 
       <button onclick="toggleResources()">Hiển thị / Ẩn tài liệu tham khảo</button>
@@ -137,7 +101,7 @@
     <input type="checkbox" id="anonymousCheck"> <label for="anonymousCheck">Bình luận ẩn danh</label>
   </div>
   <textarea id="commentBox" class="comment-box" rows="4" placeholder="Viết cảm nhận của bạn..."></textarea>
-  <button onclick="postComment()">Gửi bình luận</button>
+  <button id="submitComment">Gửi bình luận</button>
   <button onclick="sortComments()">Sắp xếp theo lượt thích 🔼</button>
   <p><strong>Tổng số bình luận:</strong> <span id="comment-count">0</span></p>
 <div class="comments" id="comments"></div>
@@ -181,8 +145,10 @@
 
 <script>
   let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+if (!Array.isArray(comments)) comments = [];
 let commentsPerPage = 10;
 let visibleComments = 10;
+let container = null;
 const ADMIN_NAME = 'admin';
 const ADMIN_PASS = 'matkhau123';
 let isAdmin = false;
@@ -193,26 +159,115 @@ let visibleComments = 10;
 
   function postComment(parentId = null) {
   let nameInput = document.getElementById('nameBox')?.value.trim();
-  if (!nameInput && currentUser && !document.getElementById('anonymousCheck')?.checked) nameInput = currentUser;
   const isAnon = document.getElementById('anonymousCheck')?.checked;
   const text = document.getElementById('commentBox')?.value.trim();
   if (!text) return;
-  const name = isAdmin && nameInput === ADMIN_NAME ? ADMIN_NAME : (isAnon ? 'Ẩn danh' : nameInput || 'Ẩn danh');
+
+  const name = isAnon ? 'Ẩn danh' : (nameInput || 'Ẩn danh');
   currentUser = name;
   localStorage.setItem('currentUser', currentUser);
+
   const newComment = {
     id: Date.now(),
     name: name,
     text: text,
     likes: 0,
     pinned: false,
-    parentId
+    parentId: parentId
   };
+
   comments.push(newComment);
   localStorage.setItem('comments', JSON.stringify(comments));
   document.getElementById('commentBox').value = '';
-  if (currentUser) document.getElementById('nameBox').value = currentUser;
+  document.getElementById('nameBox').value = currentUser;
   renderComments();
+  function renderComments() {
+  const container = document.getElementById('comments');
+  container.innerHTML = '';
+  const sorted = [...comments];
+  sorted.sort((a, b) => b.likes - a.likes);
+  const visible = sorted.slice(0, visibleComments);
+  document.getElementById('comment-count').textContent = comments.length;
+  visible.forEach(comment => {
+    const div = document.createElement('div');
+    div.className = 'comment';
+    div.innerHTML = `<strong>${comment.name}</strong><br>${comment.text}
+      <div class="comment-footer">
+        <button onclick="likeComment(${comment.id})">❤️ ${comment.likes}</button>
+        <button onclick="showReplyBox(${comment.id})">💬 Phản hồi</button>
+        <button onclick="shareComment('${comment.text}')">🔗 Chia sẻ</button>
+        ${(isAdmin || comment.name === ADMIN_NAME) ? `<button onclick="editComment(${comment.id})">✏️ Sửa</button><button onclick="deleteComment(${comment.id})">🗑️ Xóa</button>` : ''}
+      </div>
+      <div id="reply-box-${comment.id}" class="reply-box" style="display:none">
+        <textarea id="reply-${comment.id}" class="reply-input" rows="2" placeholder="Trả lời..."></textarea><br>
+        <button onclick="replyToComment(${comment.id})">Gửi phản hồi</button>
+      </div>`;
+    container.appendChild(div);
+
+    const replies = comments.filter(r => r.parentId === comment.id);
+    replies.forEach(reply => {
+      const rdiv = document.createElement('div');
+      rdiv.className = 'comment';
+      rdiv.style.marginLeft = '2rem';
+      rdiv.innerHTML = `<strong>${reply.name}</strong><br>${reply.text}<br>
+        <button onclick="likeComment(${reply.id})">❤️ ${reply.likes}</button>
+        ${(isAdmin || reply.name === ADMIN_NAME) ? `<button onclick="editComment(${reply.id})">✏️ Sửa</button><button onclick="deleteComment(${reply.id})">🗑️ Xóa</button>` : ''}`;
+      container.appendChild(rdiv);
+    });
+  });
+}</strong><br>${comment.text}
+      <div class="comment-footer">
+        <button onclick="likeComment(${comment.id})">❤️ ${comment.likes}</button>
+        <button onclick="showReplyBox(${comment.id})">💬 Phản hồi</button>
+        <button onclick="shareComment('${comment.text}')">🔗 Chia sẻ</button>
+        ${(isAdmin || comment.name === ADMIN_NAME) ? `<button onclick="editComment(${comment.id})">✏️ Sửa</button><button onclick="deleteComment(${comment.id})">🗑️ Xóa</button>` : ''}
+      </div>
+      <div id="reply-box-${comment.id}" class="reply-box" style="display:none">
+        <textarea id="reply-${comment.id}" class="reply-input" rows="2" placeholder="Trả lời..."></textarea><br>
+        <button onclick="replyToComment(${comment.id})">Gửi phản hồi</button>
+      </div>`;
+    container.appendChild(div);
+
+    const replies = comments.filter(r => r.parentId === comment.id);
+    replies.forEach(reply => {
+      const rdiv = document.createElement('div');
+      rdiv.className = 'comment';
+      rdiv.style.marginLeft = '2rem';
+      rdiv.innerHTML = `<strong>${reply.name}</strong><br>${reply.text}<br>
+        <button onclick="likeComment(${reply.id})">❤️ ${reply.likes}</button>
+        ${(isAdmin || reply.name === ADMIN_NAME) ? `<button onclick="editComment(${reply.id})">✏️ Sửa</button><button onclick="deleteComment(${reply.id})">🗑️ Xóa</button>` : ''}`;
+      container.appendChild(rdiv);
+    });
+  });
+}
+}
+}<br>${comment.text}
+      <div class="comment-footer">
+        <button onclick="likeComment(${comment.id})">❤️ ${comment.likes}</button>
+        <button onclick="showReplyBox(${comment.id})">💬 Phản hồi</button>
+        <button onclick="shareComment('${comment.text}')">🔗 Chia sẻ</button>
+        ${isAdmin || comment.name === ADMIN_NAME ? `<button onclick="editComment(${comment.id})">✏️ Sửa</button><button onclick="deleteComment(${comment.id})">🗑️ Xóa</button>` : ''}
+      </div>
+      <div id="reply-box-${comment.id}" class="reply-box" style="display:none">
+        <textarea id="reply-${comment.id}" class="reply-input" rows="2" placeholder="Trả lời..."></textarea><br>
+        <button onclick="replyToComment(${comment.id})">Gửi phản hồi</button>
+      </div>`;
+    container.appendChild(div);
+    const replies = comments.filter(r => r.parentId === comment.id);
+    replies.forEach(reply => {
+      const rdiv = document.createElement('div');
+      rdiv.className = 'comment';
+      rdiv.style.marginLeft = '2rem';
+      rdiv.innerHTML = `<strong>${reply.name}</strong><br>${reply.text}<br>
+      <button onclick="likeComment(${reply.id})">❤️ ${reply.likes}</button>
+      ${(isAdmin || reply.name === ADMIN_NAME) ? `<button onclick="editComment(${reply.id})">✏️ Sửa</button><button onclick="deleteComment(${reply.id})">🗑️ Xóa</button>` : ''}`;
+      container.appendChild(rdiv);
+    });
+  });
+}
+  document.getElementById('commentBox').value = '';
+  if (currentUser) document.getElementById('nameBox').value = currentUser;
+  
 }</strong><br>${comment.text}
         <div class="comment-footer">
           <button onclick="likeComment(${comment.id})">❤️ ${comment.likes}</button>
@@ -259,7 +314,9 @@ ${window.location.href}`);
   }
 
   renderComments();
-function toggleReplies(id) {
+  
+
+  function toggleReplies(id) {
   const repliesDiv = document.getElementById(`replies-${id}`);
   if (repliesDiv) {
     repliesDiv.style.display = repliesDiv.style.display === 'none' ? 'block' : 'none';
@@ -312,6 +369,30 @@ function editComment(id) {
     }
   }
 }
+
+  document.addEventListener('DOMContentLoaded', function() {
+  renderComments();
+  document.getElementById('submitComment').addEventListener('click', function() {
+    postComment();
+  });
+  const adminLogin = document.getElementById('adminLogin');
+  if (adminLogin) {
+    adminLogin.addEventListener('click', function() {
+      promptAdmin();
+    });
+  }
+  const darkToggle = document.querySelector('.toggle-darkmode');
+  if (darkToggle) {
+    darkToggle.addEventListener('click', toggleDarkMode);
+  }
+});
+    const adminLogin = document.getElementById('adminLogin');
+    if (adminLogin) {
+      adminLogin.addEventListener('click', function() {
+        promptAdmin();
+      });
+    }
+  });
 </script>
   </div>
 
@@ -327,8 +408,10 @@ function editComment(id) {
     }
 
     function toggleDarkMode() {
-      document.body.classList.toggle('dark');
-    }
+  document.body.classList.toggle('dark');
+  const button = document.querySelector('.toggle-darkmode');
+  button.textContent = document.body.classList.contains('dark') ? '☀️' : '🌓';
+}
   </script>
 </body>
 </html>
